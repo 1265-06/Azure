@@ -6,9 +6,9 @@
 /******/ 	function __webpack_require__(moduleId) {
 /******/
 /******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
+/******/ 		if(installedModules[moduleId]) {
 /******/ 			return installedModules[moduleId].exports;
-/******/
+/******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
@@ -220,8 +220,6 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _Board = __webpack_require__(0);
@@ -313,151 +311,127 @@ var Player = function () {
 
 			//Current player is maximizing
 			if (maximizing) {
-				var arr;
-				var rand;
-				var ret;
+				//Initializ best to the lowest possible value
+				var best = -100;
+				//Loop through all empty cells
+				board.getAvailableMoves().forEach(function (index) {
+					//Initialize a new board with the current state (slice() is used to create a new array and not modify the original)
+					var child = new _Board2.default(board.state.slice());
+					//Create a child node by inserting the maximizing symbol x into the current emoty cell
+					child.insert('x', index);
 
-				var _ret = function () {
-					//Initializ best to the lowest possible value
-					var best = -100;
-					//Loop through all empty cells
-					board.getAvailableMoves().forEach(function (index) {
-						//Initialize a new board with the current state (slice() is used to create a new array and not modify the original)
-						var child = new _Board2.default(board.state.slice());
-						//Create a child node by inserting the maximizing symbol x into the current emoty cell
-						child.insert('x', index);
-
-						//Console Tracing Code
-						if (TRACE) {
-							var styles = depth == 0 ? exploring_parent : exploring_child;
-							console.log('%cExploring move ' + index, styles);
-							child.printFormattedBoard();
-						}
-
-						//Recursively calling getBestMove this time with the new board and minimizing turn and incrementing the depth
-						var node_value = _this.getBestMove(child, false, callback, depth + 1);
-						//Updating best value
-						best = Math.max(best, node_value);
-
-						//Console Tracing Code
-						if (TRACE) {
-							if (depth == 0) {
-								console.log('%cMove ' + index + ' yielded a heuristic value of ' + node_value, parent_heuristic);
-							} else {
-								console.log('%cChild move ' + index + ' yielded a heuristic value of ' + node_value, child_heuristic);
-							}
-						}
-
-						//If it's the main function call, not a recursive one, map each heuristic value with it's moves indicies
-						if (depth == 0) {
-							//Comma seperated indicies if multiple moves have the same heuristic value
-							var moves = _this.nodes_map.has(node_value) ? _this.nodes_map.get(node_value) + ',' + index : index;
-							_this.nodes_map.set(node_value, moves);
-						}
-					});
-					//If it's the main call, return the index of the best move or a random index if multiple indicies have the same value
-					if (depth == 0) {
-						if (typeof _this.nodes_map.get(best) == 'string') {
-							arr = _this.nodes_map.get(best).split(',');
-							rand = Math.floor(Math.random() * arr.length);
-							ret = arr[rand];
-						} else {
-							ret = _this.nodes_map.get(best);
-						}
-						//Console Tracing Code
-						if (TRACE) {
-							_this.nodes_map.forEach(function (index, value) {
-								console.log('%cMove(s) ' + index + ' yielded ' + value, all_moves);
-							});
-							console.log('%cMove ' + ret + ' was decided as the best move', best_move);
-						}
-						//run a callback after calculation and return the index
-						callback(ret);
-						return {
-							v: ret
-						};
+					//Console Tracing Code
+					if (TRACE) {
+						var styles = depth == 0 ? exploring_parent : exploring_child;
+						console.log('%cExploring move ' + index, styles);
+						child.printFormattedBoard();
 					}
-					//If not main call (recursive) return the heuristic value for next calculation
-					return {
-						v: best
-					};
-				}();
 
-				if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+					//Recursively calling getBestMove this time with the new board and minimizing turn and incrementing the depth
+					var node_value = _this.getBestMove(child, false, callback, depth + 1);
+					//Updating best value
+					best = Math.max(best, node_value);
+
+					//Console Tracing Code
+					if (TRACE) {
+						if (depth == 0) {
+							console.log('%cMove ' + index + ' yielded a heuristic value of ' + node_value, parent_heuristic);
+						} else {
+							console.log('%cChild move ' + index + ' yielded a heuristic value of ' + node_value, child_heuristic);
+						}
+					}
+
+					//If it's the main function call, not a recursive one, map each heuristic value with it's moves indicies
+					if (depth == 0) {
+						//Comma seperated indicies if multiple moves have the same heuristic value
+						var moves = _this.nodes_map.has(node_value) ? _this.nodes_map.get(node_value) + ',' + index : index;
+						_this.nodes_map.set(node_value, moves);
+					}
+				});
+				//If it's the main call, return the index of the best move or a random index if multiple indicies have the same value
+				if (depth == 0) {
+					if (typeof this.nodes_map.get(best) == 'string') {
+						var arr = this.nodes_map.get(best).split(',');
+						var rand = Math.floor(Math.random() * arr.length);
+						var ret = arr[rand];
+					} else {
+						ret = this.nodes_map.get(best);
+					}
+					//Console Tracing Code
+					if (TRACE) {
+						this.nodes_map.forEach(function (index, value) {
+							console.log('%cMove(s) ' + index + ' yielded ' + value, all_moves);
+						});
+						console.log('%cMove ' + ret + ' was decided as the best move', best_move);
+					}
+					//run a callback after calculation and return the index
+					callback(ret);
+					return ret;
+				}
+				//If not main call (recursive) return the heuristic value for next calculation
+				return best;
 			}
 
 			if (!maximizing) {
-				var arr;
-				var rand;
-				var ret;
+				//Initializ best to the highest possible value
+				var _best = 100;
+				//Loop through all empty cells
+				board.getAvailableMoves().forEach(function (index) {
+					//Initialize a new board with the current state (slice() is used to create a new array and not modify the original)
+					var child = new _Board2.default(board.state.slice());
+					//Create a child node by inserting the minimizing symbol o into the current emoty cell
+					child.insert('o', index);
 
-				var _ret2 = function () {
-					//Initializ best to the highest possible value
-					var best = 100;
-					//Loop through all empty cells
-					board.getAvailableMoves().forEach(function (index) {
-						//Initialize a new board with the current state (slice() is used to create a new array and not modify the original)
-						var child = new _Board2.default(board.state.slice());
-						//Create a child node by inserting the minimizing symbol o into the current emoty cell
-						child.insert('o', index);
-
-						//Console Tracing Code
-						if (TRACE) {
-							var styles = depth == 0 ? exploring_parent : exploring_child;
-							console.log('%cExploring move ' + index, styles);
-							child.printFormattedBoard();
-						}
-
-						//Recursively calling getBestMove this time with the new board and maximizing turn and incrementing the depth
-						var node_value = _this.getBestMove(child, true, callback, depth + 1);
-						//Updating best value
-						best = Math.min(best, node_value);
-
-						//Console Tracing Code
-						if (TRACE) {
-							if (depth == 0) {
-								console.log('%cMove ' + index + ' yielded a heuristic value of ' + node_value, parent_heuristic);
-							} else {
-								console.log('%cChild move ' + index + ' yielded a heuristic value of ' + node_value, child_heuristic);
-							}
-						}
-
-						//If it's the main function call, not a recursive one, map each heuristic value with it's moves indicies
-						if (depth == 0) {
-							//Comma seperated indicies if multiple moves have the same heuristic value
-							var moves = _this.nodes_map.has(node_value) ? _this.nodes_map.get(node_value) + ',' + index : index;
-							_this.nodes_map.set(node_value, moves);
-						}
-					});
-					//If it's the main call, return the index of the best move or a random index if multiple indicies have the same value
-					if (depth == 0) {
-						if (typeof _this.nodes_map.get(best) == 'string') {
-							arr = _this.nodes_map.get(best).split(',');
-							rand = Math.floor(Math.random() * arr.length);
-							ret = arr[rand];
-						} else {
-							ret = _this.nodes_map.get(best);
-						}
-						//Console Tracing Code
-						if (TRACE) {
-							_this.nodes_map.forEach(function (index, value) {
-								console.log('%cMove(s) ' + index + ' yielded ' + value, all_moves);
-							});
-							console.log('%cMove ' + ret + ' was decided as the best move', best_move);
-						}
-						//run a callback after calculation and return the index
-						callback(ret);
-						return {
-							v: ret
-						};
+					//Console Tracing Code
+					if (TRACE) {
+						var styles = depth == 0 ? exploring_parent : exploring_child;
+						console.log('%cExploring move ' + index, styles);
+						child.printFormattedBoard();
 					}
-					//If not main call (recursive) return the heuristic value for next calculation
-					return {
-						v: best
-					};
-				}();
 
-				if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
+					//Recursively calling getBestMove this time with the new board and maximizing turn and incrementing the depth
+					var node_value = _this.getBestMove(child, true, callback, depth + 1);
+					//Updating best value
+					_best = Math.min(_best, node_value);
+
+					//Console Tracing Code
+					if (TRACE) {
+						if (depth == 0) {
+							console.log('%cMove ' + index + ' yielded a heuristic value of ' + node_value, parent_heuristic);
+						} else {
+							console.log('%cChild move ' + index + ' yielded a heuristic value of ' + node_value, child_heuristic);
+						}
+					}
+
+					//If it's the main function call, not a recursive one, map each heuristic value with it's moves indicies
+					if (depth == 0) {
+						//Comma seperated indicies if multiple moves have the same heuristic value
+						var moves = _this.nodes_map.has(node_value) ? _this.nodes_map.get(node_value) + ',' + index : index;
+						_this.nodes_map.set(node_value, moves);
+					}
+				});
+				//If it's the main call, return the index of the best move or a random index if multiple indicies have the same value
+				if (depth == 0) {
+					if (typeof this.nodes_map.get(_best) == 'string') {
+						var arr = this.nodes_map.get(_best).split(',');
+						var rand = Math.floor(Math.random() * arr.length);
+						var ret = arr[rand];
+					} else {
+						ret = this.nodes_map.get(_best);
+					}
+					//Console Tracing Code
+					if (TRACE) {
+						this.nodes_map.forEach(function (index, value) {
+							console.log('%cMove(s) ' + index + ' yielded ' + value, all_moves);
+						});
+						console.log('%cMove ' + ret + ' was decided as the best move', best_move);
+					}
+					//run a callback after calculation and return the index
+					callback(ret);
+					return ret;
+				}
+				//If not main call (recursive) return the heuristic value for next calculation
+				return _best;
 			}
 		}
 	}]);
